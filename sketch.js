@@ -11,7 +11,7 @@ function setup() {
   color1 = random(palette);
   color2 = random(palette);
   linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
-  center_radius = int(random(0, width*.25));
+  center_radius = int(random(0, width*.10));
   center = Polygon(width/2, height/2, center_radius, 6);
 }
 
