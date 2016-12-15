@@ -4,6 +4,7 @@ var X_AXIS = 0;
 var Y_AXIS = 1;
 var center_radius;
 var center;
+
 function setup() {
   createCanvas(720, 720);
   palette = loadPalette();
