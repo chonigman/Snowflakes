@@ -3,6 +3,7 @@ function Polygon(x, y, radius, num_sides) {
   this.y = y;
   this.pos = createVector(x, y);
   this.r = radius;
+  this.max_r = random(radius, 10*radius);
   this.n = num_sides;
   this.vertices = [];
   var angle = TWO_PI / this.n;
@@ -10,21 +11,22 @@ function Polygon(x, y, radius, num_sides) {
   for (var a = offset; a < TWO_PI+offset; a += angle) {
     var sx = x + cos(a) * this.r;
     var sy = y + sin(a) * this.r;
-    this.vertices.push({'x': sx, 'y': sy});
+    this.vertices.push(createVector(sx, sy));
   }
-
-  var circle_r = random(0, this.r);
+  var circle_r = random(0, this.r/2);
 
   this.draw = function() {
 
     beginShape();
-    for (var i = 0; i < this.vertices.length; i++){
-      vertex(this.vertices[i]['x'], this.vertices[i]['y']);
+    for (let vert of vertices){
+      vertex(vert.x, vert.y);
     }
     endShape(CLOSE);
 
-    for (var i = 0; i < this.vertices.length; i++){
-        line(this.x, this.y, this.vertices[i]['x'], this.vertices[i]['y']);
+    for (let vert of vertices){
+        var d = vert.copy().sub(this.pos).normalize();
+        var v = vert.add(d.mult(10));
+        line(this.x, this.y, v.x, v.y); 
     }
     
     ellipse(this.x, this.y, circle_r, circle_r);
