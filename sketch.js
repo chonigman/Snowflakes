@@ -10,23 +10,26 @@ var startup;
 
 
 function setup() {
+    randomSeed(20);
     createCanvas(720, 720);
     palette = loadPalette();
     color1 = random(palette);
     color2 = random(palette);
     s_color = random(palette);
     linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
-    center_radius = int(random(width*.05, width *.10));
+    center_radius = int(random(width*.01, width *.05));
     center = new Polygon(width/2, height/2, center_radius, 6, true);
     flakes = makeFlakes(center, center_radius);
     startup = true;
+    stroke_color = color(red(s_color), green(s_color), blue(s_color), 50);
     //frameRate(10);
 }
 
 function draw() {
     noFill();
-    stroke(s_color);
+
     center.display();
+    stroke(stroke_color);
     if(center.growing == false){
         for(let f of flakes){
             f.display();
