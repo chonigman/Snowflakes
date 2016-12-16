@@ -2,26 +2,46 @@ var palette;
 var bg_color;
 var X_AXIS = 0;
 var Y_AXIS = 1;
-var center_radius;
-var center;
+var theta = 1;
+
+var shapes = [];
+var agents = [];
+
 function setup() {
   createCanvas(720, 720);
   palette = loadPalette();
   color1 = random(palette);
   color2 = random(palette);
-  linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
-  center_radius = int(random(0, width*.25));
-  center = Polygon(width/2, height/2, center_radius, 6);
+  //linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
+
+  for(var i = 0; i < 6; i++) {
+    shapes[i] = new Flake(0, 0, 10);
+  }
+
+  background(100);
+  stroke(255);
+  translate(width/2, height/2);
+  ellipse(0, 0, 3, 3);
 }
 
 function draw() {
-  //background(bg_color);
-  stroke(255);
-  noFill();
-  center.draw();
-  //drawCircle(width / 2, height / 2, 300);
+  translate(width/2, height/2);
+  for(var i = 0; i < 6; i++) {
+    push();
+    rotate((PI/3) * i);
+    shapes[i].update();
+    shapes[i].display();
+    pop();
+  }
 
+  for(var i = 0; i < agents.length; i++) {
+    agents[i].update();
+    agents[i].display();
+  }
 }
+
+
+
 
 function linearGradient(x, y, w, h, c1, c2, axis){
   noFill();
@@ -42,3 +62,4 @@ function linearGradient(x, y, w, h, c1, c2, axis){
   }
   
 }
+
