@@ -3,16 +3,16 @@ var Flake = function(x, y, seed) {
   this.shape = new Polygon(x, y, seed);
 
   this.update = function() {
-    for(var i = 0; i < this.shape.agents.length; i++) {
-      this.shape.agents[i].update()
-    }
+  //for(var i = 0; i < this.shape.agents.length; i++) {
+    //this.shape.agents[i].update()
+  //}
   }
 
   this.display = function() {
     this.shape.display();
-    for(var i = 0; i < this.shape.agents.length; i++) {
-      this.shape.agents[i].display();
-    }
+    //for(var i = 0; i < this.shape.agents.length; i++) {
+      //this.shape.agents[i].display();
+    //}
   }
 }
 
@@ -24,9 +24,11 @@ var Polygon = function(x, y, seed) {
   this.branches = [];
   this.seed = seed
   this.agents = [];
+  this.arr_test = [];
 
   this.display = function() {
     randomSeed(this.seed);
+    strokeWeight(3);
     this.branch(400);
   }
 
@@ -34,18 +36,20 @@ var Polygon = function(x, y, seed) {
     len *= random(0.3, 0.7);
     if(len > 20) {
 
-      for(var i = 0; i > -len * 2; i-=20) {
-        this.agents.push(new Agent(0, i, map(i, 0, -len * 2, 20, 0)));
-      }
+      //for(var i = 0; i > -len * 2; i-=50) {
+        //this.agents.push(new Agent(0, i, map(i, 0, -len * 2, 20, 0)));
+        //ellipse(0, i, 5, 5);
+      //}
       line(0, 0, 0, -len * 2);
 
       push();
       translate(0, -len);
       rotate(this.theta);
 
-      for(var i = 0; i < len; i+=20) {
-        this.agents.push(new Agent(0, i, map(i, 0, len, 0, 20)));
-      }
+      //for(var i = 0; i < len; i+=50) {
+        //this.agents.push(new Agent(0, -i, map(i, 0, len, 0, 20)));
+        //ellipse(0, -i, 5, 5);
+      //}
       line(0, 0, 0, -len);
 
       this.branch(len);
@@ -55,9 +59,10 @@ var Polygon = function(x, y, seed) {
       translate(0, -len);
       rotate(-this.theta);
 
-      for(var i = 0; i > -len; i-=20) {
-        this.agents.push(new Agent(0, i, map(i, 0, -len, 20, 0)));
-      }
+      //for(var i = 0; i > -len; i-=50) {
+        //this.agents.push(new Agent(0, i, map(i, 0, -len, 20, 0)));
+        //ellipse(0, i, 5, 5);
+      //}
       line(0, 0, 0, -len);
 
       this.branch(len);
