@@ -14,6 +14,7 @@ function Polygon(x, y, radius, num_sides, is_center) {
     this.count = 0;
     this.center_color = random(palette);
     this.second_color = random(palette);
+    this.ext_points = [];
     if (is_center){
         var offset = random(rotation) * angle;
         for (var a = offset; a < TWO_PI+offset; a += angle) {
@@ -43,10 +44,12 @@ function Polygon(x, y, radius, num_sides, is_center) {
                 var d = vert.copy().sub(this.pos).normalize();
                 if (this.pos.dist(vert) < 100){//random(50, 100)){
                     var v = vert.add(d.mult(this.r/2));
+                    this.ext_points.push(v);
                     // inner lines
                     line(this.x, this.y, v.x, v.y); 
                 } else if (frameCount < 100) {
                     var v = vert.copy().add(d.mult(frameCount));
+                    this.ext_points.push(v);
                     // extending lines
                     line(this.x, this.y, v.x, v.y); 
                 } else {
@@ -54,7 +57,7 @@ function Polygon(x, y, radius, num_sides, is_center) {
                 }
             }
             ellipse(this.x, this.y, circle_r, circle_r);
-        }         else if (this.count < random(50, 100)) {
+        }        if (this.count < random(50, 100)) {
             for (i = 0; i < this.vertices.length; i++){
                 vert = this.vertices[i];
                 var d = vert.copy().sub(this.pos).normalize();
