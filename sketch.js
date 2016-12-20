@@ -12,12 +12,21 @@ var clickEnd = null;
 var rot = 0;
 var pos;
 var sides = 6;
+var step = 10;
 var angles = [];
+var thestring = 'A';
+var therules = []; // array for rules
+therules[0] = ['A', '+F+F--A+F+A--']; // first rule
+therules[1] = ['B', '+AF+BFB-FA+F--F-F-']; // second rule
+var whereinstring = 0;
+var currentangle = 0;
+var x = 0;
+var y = 0;
 
 function setup() {
   createCanvas(720, 720);
   palette = loadPalette();
-  randomSeed(13);
+  randomSeed(10);
   color1 = random(palette);
   color2 = random(palette);
   color3 = random(palette);
@@ -25,11 +34,20 @@ function setup() {
   center_radius = int(random(0, width*.25));
   angleMode(DEGREES);
   angle = 360/sides; 
+  var s = '';
+  for(var i = 0; i < 6; i++){
+    s += random(['+', 'F' , 'A', '-', '-', 'F',  'A',  'F', '+', 'F']); 
+  }
+  therules[0][1] = s;
   for(var i = 0; i < sides; i++){
     angles.push(i*angle);
   }
   rot = 0;
   pos = createVector(width/2, height/2);
+  for (var i = 0; i < 3; i++) {
+    thestring = lindenmayer(thestring);
+  }
+  print(thestring);
   //center = Polygon(width/2, height/2, center_radius, 6);
 }
 
@@ -39,11 +57,13 @@ function draw() {
     noFill();
     //print(pos);
 
+    //        beginShape();
     for(var i = 0; i < angles.length; i++){
         push();
         translate(pos.x, pos.y);
 
         rotate(angles[i]);
+        drawIt(thestring[whereinstring]); 
         if(clickStart !== null){
             var mpos = getMousePos();
             line(clickStart.x, clickStart.y, mpos.x, mpos.y);
@@ -78,7 +98,12 @@ function draw() {
             }
         }
         pop();
+    whereinstring++;
+    if(whereinstring > thestring.length-1) whereinstring = 0;
     }
+
+
+    //endShape();
 }
 
 function mousePressed(){
@@ -126,6 +151,46 @@ function linearGradient(x, y, w, h, c1, c2, axis){
             stroke(c);
             line(i, y, i, y + h);
         }
+    }
+
+}
+// interpret an L-system
+function lindenmayer(s) {
+    var outputstring = ''; // start a blank output string
+
+    // iterate through 'therules' looking for symbol matches:
+    for (var i = 0; i < s.length; i++) {
+        var ismatch = 0; // by default, no match
+        for (var j = 0; j < therules.length; j++) {
+            if (s[i] == therules[j][0])  {
+                outputstring += therules[j][1]; // write substitution
+                ismatch = 1; // we have a match, so don't copy over symbol
+                break; // get outta this for() loop
+            }
+        }
+        // if nothing matches, just copy the symbol over.
+        if (ismatch == 0) outputstring+= s[i]; 
+    }
+
+    return outputstring; // send out the modified string
+}
+
+// this is a custom function that draws turtle commands
+function drawIt(k) {
+
+    if (k=='F') { // draw forward
+        // polar to cartesian based on step and currentangle:
+        var x1 = x + step*cos(radians(currentangle));
+        var y1 = y + step*sin(radians(currentangle));
+        line(x, y, x1, y1); // connect the old and the new
+
+        // update the turtle's position:
+        x = x1;
+        y = y1;
+    } else if (k == '+') {
+        currentangle += angle; // turn left
+    } else if (k == '-') {
+        currentangle -= angle; // turn right   
     }
 
 }
