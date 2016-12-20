@@ -11,6 +11,8 @@ var clickStart = null;
 var clickEnd = null;
 var rot = 0;
 var pos;
+var sides = 6;
+var angles = [];
 
 function setup() {
   createCanvas(720, 720);
@@ -21,84 +23,62 @@ function setup() {
   color3 = random(palette);
   linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
   center_radius = int(random(0, width*.25));
-  angle = 45;
+  angleMode(DEGREES);
+  angle = 360/sides; 
+  for(var i = 0; i < sides; i++){
+    angles.push(i*angle);
+  }
   rot = 0;
   pos = createVector(width/2, height/2);
   //center = Polygon(width/2, height/2, center_radius, 6);
 }
 
 function draw() {
-  linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
-  stroke(color3);
-  noFill();
-  //print(pos);
-  push();
-  translate(pos.x, pos.y);
-if(clickStart !== null){
-      var mpos = getMousePos();
+    linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
+    stroke(color3);
+    noFill();
+    //print(pos);
 
-      print(getMousePos());
-      line(clickStart.x, clickStart.y, mpos.x, mpos.y);
-  }
-  for(var i = 0; i < 8; i++){
-      rotate(radians(angle*i));
-      //line(0, 0, width/2, 0);
-      for(var j = 0; j < 10; j++){
-          //ellipse(20+20*j, 0, 10+j, 10+j);
-      }
-      for(j = 0; j < 5; j++){
-          //line(0, 0, 300, 10*j);
-      }
-      for(j = 0; j < 5; j++){
-          //line(20*j, 20*j, 20*j, -20*j);
-      }
-      if (mouseIsPressed){
-      //    var mpos = getMousePos();
-      //    var pmpos = getMousePos(true);
-      //    var lpos = createVector(lerp(pmpos.x, mpos.x, .5), lerp(pmpos.y, mpos.y, .5));
-      //    line(pmpos.x, pmpos.y, lpos.x, lpos.y); 
-      }
-      //if(clickStart !== null){
-      //  var mpos = getMousePos();
-      // line(clickStart.x, clickStart.y, mpos.x, mpos.y);
-      //}
-      //point(mpos.x, mpos.y);
-      if ( keyIsPressed == false){
-      for (j = 0; j < clickList.length; j++){
-          var l = clickList[j];
-          line(l.clickStart.x, l.clickStart.y, l.clickEnd.x, l.clickEnd.y);
-          //line(l.clickStart.x, -l.clickStart.y, l.clickEnd.x, -l.clickEnd.y);
-//          beginShape();
-//          for(var c = 0; c < l.clickMove.length; c++){
-//          //      vertex(l.clickMove[c].x, l.clickMove[c].y);
-//          }
-//
-//          endShape();
+    for(var i = 0; i < angles.length; i++){
+        push();
+        translate(pos.x, pos.y);
 
-          //clickList.splice(j, 1);
+        rotate(angles[i]);
+        if(clickStart !== null){
+            var mpos = getMousePos();
+            line(clickStart.x, clickStart.y, mpos.x, mpos.y);
+        }
+        //line(0, 0, width/2, 0);
+        if ( keyIsPressed == false){
+            for (j = 0; j < clickList.length; j++){
+                var l = clickList[j];
+                line(l.clickStart.x, l.clickStart.y, l.clickEnd.x, l.clickEnd.y);
+                line(l.clickStart.x, -l.clickStart.y, l.clickEnd.x, -l.clickEnd.y);
+                //vertex(l.clickStart.x, l.clickStart.y);
+                //vertex(-l.clickStart.x, -l.clickStart.y);
+                //          beginShape();
+                //          for(var c = 0; c < l.clickMove.length; c++){
+                //          //      vertex(l.clickMove[c].x, l.clickMove[c].y);
+                //          }
+                //
+                //          endShape();
+            }
+        } else{
 
-      }
-      } else{
-       for (j = 0; j < clickList.length; j++){
-          var l = clickList[j];
-           push();
-           translate(l.clickStart.x, l.clickStart.y);
-           rotate(radians(rot%360));
-            var d = p5.Vector.sub(l.clickStart, l.clickEnd);
-          line(0, 0, d.x, d.y);
-          //line(0, -l.clickStart.y, -l.clickEnd.x, -l.clickEnd.y);
-          rot += .05;
-          pop();
-       }
- 
-      }
-
-
-  }
-
-  
-  pop();
-
+            rot += .5;
+            for (j = 0; j < clickList.length; j++){
+                var l = clickList[j];
+                push();
+                translate(l.clickStart.x, l.clickStart.y);
+                rotate(rot%360);
+                var d = p5.Vector.sub(l.clickStart, l.clickEnd);
+                line(0, 0, d.x, d.y);
+                line(0, -l.clickStart.y, -l.clickEnd.x, -l.clickEnd.y);
+                pop();
+            }
+        }
+        pop();
+    }
 }
 
 function mousePressed(){
