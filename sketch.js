@@ -39,7 +39,9 @@ var save_button;
 var clear_button;
 var mode_button;
 var undo_button;
+var new_rule_button;
 var undo_now = false;
+var generations = 5;
 
 
 function setup() {
@@ -68,9 +70,10 @@ function setup() {
   //****** Step size for more smooth (low) rigid (high) values
   step = 1;
   //******_Change number of iterations to affect size/form
-  for (var i = 0; i < 5; i++) {
-      thestring = lindenmayer(thestring);
-  }
+  //for (var i = 0; i < generations; i++) {
+  //    thestring = lindenmayer(thestring);
+  //}
+  newRule();
   save_button = createButton('Download');
   save_button.mousePressed(saveIt);
   print(thestring);
@@ -79,6 +82,8 @@ function setup() {
   clear_button.mousePressed(clearLines);
   undo_button = createButton('Undo');
   undo_button.mousePressed(undo);
+  new_rule_button = createButton('Generate');
+  new_rule_button.mousePressed(newRule);
   //frameRate(1);
   //center = Polygon(width/2, height/2, center_radius, 6);
 }
@@ -229,7 +234,7 @@ function lindenmayer(s) {
 // this is a custom function that draws turtle commands
 function drawIt(k) {
 
-    //if (k=='F') { // draw forward
+    if (k=='F') { // draw forward
 
     // polar to cartesian based on step and currentangle:
     var x1 = tx+step*cos(radians(currentangle));
@@ -239,7 +244,11 @@ function drawIt(k) {
     // update the turtle's position:
     //tx = x1;
     //ty = y1;
-    //} 
+    }else if(k=='H'){
+    var x1 = tx+step*cos(radians(currentangle));
+    var y1 = ty+step*sin(radians(currentangle));
+        ellipse(x1, y1, 2, 2);
+    }
 }
 
 function updateIt(k) {
@@ -266,4 +275,20 @@ function saveIt(){
 }
 function undo(){
     undo_now = true;
+}
+
+function newRule(){
+    thestring = random(['HFHFFHF', 'FFFHHFHHFFF', 'FHF']);
+    for(var i = 0; i < 6; i++){
+        thestring += random(['+', 'F' , 'F', '-', 'F',  'F','F','F', '+', 'F', '-', '-']); 
+    }
+  for (var i = 0; i < generations; i++) {
+      thestring = lindenmayer(thestring);
+  }
+  print(thestring);
+  currentangle = 0;
+  whereinstring = 0;
+  tx = 0;
+  ty = 0;
+
 }
