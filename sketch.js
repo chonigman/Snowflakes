@@ -112,7 +112,7 @@ function draw() {
         rotate(radians(angles[i]));
         if(mode_button.checked() == false){
 
-            stroke(color4.levels[0], color4.levels[1], color4.levels[2], 80);
+            stroke(color4.levels[0], color4.levels[1], color4.levels[2], 100);
             drawIt(thestring[whereinstring]);
         } else if(clickStart !== null){
             var mpos = getMousePos();
@@ -159,7 +159,7 @@ function draw() {
     if (undo_now){
         undo_now = false;
         //clickList = clickList.splice(clickList.length-1, 1);
-        clickList.shift();
+        clickList.pop();
         print(clickList.length);
     }
     //endShape();
