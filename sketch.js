@@ -1,3 +1,7 @@
+/* Better color selection (lightness isssue)
+ * Stroke weight selection
+ * 
+ */
 var palette;
 var bg_color;
 var X_AXIS = 0;
@@ -12,64 +16,95 @@ var clickEnd = null;
 var rot = 0;
 var pos;
 var sides = 6;
-var step = 10;
+var step = 4;
 var angles = [];
-var thestring = 'A';
+//var thestring = 'HFHFFHF'; // keep because it's good
+var thestring = 'HFHFFHF';
+//thestring = 'FHFHFHF';
+//thestring = 'H++H+F-HFFHF';
 var therules = []; // array for rules
-therules[0] = ['A', '+F+F--A+F+A--']; // first rule
+therules[0] = ['A', 'FF+F-A+F+A--']; // first rule
+therules[0] = ['A', 'FFFA+F+F--FFA+F+A--']; // first rule
 therules[1] = ['B', '+AF+BFB-FA+F--F-F-']; // second rule
+var newrules = [];
+newrules[0] = ['F', 'F-H'];
+newrules[1] = ['H', 'F+H'];
 var whereinstring = 0;
 var currentangle = 0;
-var x = 0;
-var y = 0;
+var tx = 0;
+var ty = 0;
+var nx, ny;
+var npos;
+var save_button;
+var clear_button;
+var mode_button;
+var undo_button;
+var undo_now = false;
+
 
 function setup() {
+  strokeWeight(10);
   createCanvas(720, 720);
   palette = loadPalette();
-  randomSeed(10);
+  //randomSeed(20);
   color1 = random(palette);
   color2 = random(palette);
   color3 = random(palette);
   linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
   center_radius = int(random(0, width*.25));
-  angleMode(DEGREES);
+  //angleMode(DEGREES);
   angle = 360/sides; 
-  var s = '';
+  var s = 'FAF+F+FF-F-A-F';
   for(var i = 0; i < 6; i++){
-    s += random(['+', 'F' , 'A', '-', '-', 'F',  'A',  'F', '+', 'F']); 
+    thestring += random(['+', 'F' , 'F', '-', 'F',  'F','F','F', '+', 'F', '-', '-']); 
   }
-  therules[0][1] = s;
+  
+  //therules[0][1] = s;
   for(var i = 0; i < sides; i++){
     angles.push(i*angle);
   }
   rot = 0;
   pos = createVector(width/2, height/2);
-  for (var i = 0; i < 3; i++) {
-    thestring = lindenmayer(thestring);
+  for (var i = 0; i < 2; i++) {
+      thestring = lindenmayer(thestring);
   }
+  save_button = createButton('Download');
+  save_button.mousePressed(saveIt);
   print(thestring);
+  mode_button = createCheckbox('Draw Mode', false);
+  clear_button = createButton('Clear');
+  clear_button.mousePressed(clearLines);
+  undo_button = createButton('Undo');
+  undo_button.mousePressed(undo);
+  //frameRate(1);
   //center = Polygon(width/2, height/2, center_radius, 6);
 }
 
 function draw() {
-    linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
-    stroke(color3);
+    if(mode_button.checked()){
+      linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
+    } else{
+        updateIt(thestring[whereinstring]);
+    }
+    strokeWeight(2.2);
+    stroke(color3.levels[0], color3.levels[1], color3.levels[2], 50);
     noFill();
-    //print(pos);
 
-    //        beginShape();
     for(var i = 0; i < angles.length; i++){
         push();
         translate(pos.x, pos.y);
+        rotate(radians(angles[i]));
+        if(mode_button.checked() == false){
+            drawIt(thestring[whereinstring]);
+        }
 
-        rotate(angles[i]);
-        drawIt(thestring[whereinstring]); 
         if(clickStart !== null){
             var mpos = getMousePos();
             line(clickStart.x, clickStart.y, mpos.x, mpos.y);
+            line(clickStart.x, -clickStart.y, mpos.x, -mpos.y);
         }
         //line(0, 0, width/2, 0);
-        if ( keyIsPressed == false){
+        if (keyIsPressed == false){
             for (j = 0; j < clickList.length; j++){
                 var l = clickList[j];
                 line(l.clickStart.x, l.clickStart.y, l.clickEnd.x, l.clickEnd.y);
@@ -85,24 +120,29 @@ function draw() {
             }
         } else{
 
-            rot += .5;
+            rot += 1;
             for (j = 0; j < clickList.length; j++){
                 var l = clickList[j];
                 push();
                 translate(l.clickStart.x, l.clickStart.y);
-                rotate(rot%360);
+                rotate(radians(rot%360));
                 var d = p5.Vector.sub(l.clickStart, l.clickEnd);
                 line(0, 0, d.x, d.y);
-                line(0, -l.clickStart.y, -l.clickEnd.x, -l.clickEnd.y);
+                line(0, 0, d.x, -d.y);
                 pop();
             }
         }
         pop();
-    whereinstring++;
-    if(whereinstring > thestring.length-1) whereinstring = 0;
     }
 
-
+    whereinstring++;
+    if(whereinstring > thestring.length-1) whereinstring = 0;
+    if (undo_now){
+        undo_now = false;
+        //clickList = clickList.splice(clickList.length-1, 1);
+        clickList.shift();
+        print(clickList.length);
+    }
     //endShape();
 }
 
@@ -154,6 +194,7 @@ function linearGradient(x, y, w, h, c1, c2, axis){
     }
 
 }
+
 // interpret an L-system
 function lindenmayer(s) {
     var outputstring = ''; // start a blank output string
@@ -161,9 +202,9 @@ function lindenmayer(s) {
     // iterate through 'therules' looking for symbol matches:
     for (var i = 0; i < s.length; i++) {
         var ismatch = 0; // by default, no match
-        for (var j = 0; j < therules.length; j++) {
-            if (s[i] == therules[j][0])  {
-                outputstring += therules[j][1]; // write substitution
+        for (var j = 0; j < newrules.length; j++) {
+            if (s[i] == newrules[j][0])  {
+                outputstring += newrules[j][1]; // write substitution
                 ismatch = 1; // we have a match, so don't copy over symbol
                 break; // get outta this for() loop
             }
@@ -175,22 +216,45 @@ function lindenmayer(s) {
     return outputstring; // send out the modified string
 }
 
+
 // this is a custom function that draws turtle commands
 function drawIt(k) {
 
-    if (k=='F') { // draw forward
-        // polar to cartesian based on step and currentangle:
-        var x1 = x + step*cos(radians(currentangle));
-        var y1 = y + step*sin(radians(currentangle));
-        line(x, y, x1, y1); // connect the old and the new
+    //if (k=='F') { // draw forward
 
-        // update the turtle's position:
-        x = x1;
-        y = y1;
-    } else if (k == '+') {
+    // polar to cartesian based on step and currentangle:
+    var x1 = tx+step*cos(radians(currentangle));
+    var y1 = ty+step*sin(radians(currentangle));
+    line(tx, ty, x1, y1); // connect the old and the new
+    line(tx, -ty, x1, -y1);
+    // update the turtle's position:
+    //tx = x1;
+    //ty = y1;
+    //} 
+}
+
+function updateIt(k) {
+    tx = tx + step * cos(radians(currentangle));
+    ty = ty + step * sin(radians(currentangle));
+    if (k == '+') {
         currentangle += angle; // turn left
     } else if (k == '-') {
         currentangle -= angle; // turn right   
     }
 
+}
+
+function clearLines(){
+    currentangle = 0;
+    whereinstring = 0;
+    tx = 0;
+    ty = 0;
+    linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
+    clickList = [];
+}
+function saveIt(){
+    saveCanvas('KadenzeSnowflake', 'jpg');
+}
+function undo(){
+    undo_now = true;
 }
