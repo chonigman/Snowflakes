@@ -40,6 +40,7 @@ var clear_button;
 var mode_button;
 var undo_button;
 var new_rule_button;
+var random_color;
 var undo_now = false;
 var generations = 5;
 
@@ -84,6 +85,7 @@ function setup() {
   undo_button.mousePressed(undo);
   new_rule_button = createButton('Generate');
   new_rule_button.mousePressed(newRule);
+  random_color = createCheckbox('Random Color', false);
   //frameRate(1);
   //center = Polygon(width/2, height/2, center_radius, 6);
 }
@@ -95,8 +97,13 @@ function draw() {
         updateIt(thestring[whereinstring]);
     }
     strokeWeight(2.3);
-    var color4 = color3;// random([color1, color2, color3]);
+    var color4;
+    if (random_color.checked()){
+        color4 = random([color1, color2, color3]);
     //stroke(color3.levels[0], color3.levels[1], color3.levels[2], 80);
+    }else{
+        color4 = color3;// random([color1, color2, color3]);
+    }
     noFill();
 
     for(var i = 0; i < angles.length; i++){
@@ -107,9 +114,7 @@ function draw() {
 
             stroke(color4.levels[0], color4.levels[1], color4.levels[2], 80);
             drawIt(thestring[whereinstring]);
-        }
-
-        if(clickStart !== null){
+        } else if(clickStart !== null){
             var mpos = getMousePos();
             stroke(color3);
             line(clickStart.x, clickStart.y, mpos.x, mpos.y);
@@ -161,22 +166,28 @@ function draw() {
 }
 
 function mousePressed(){
+    if (mode_button.checked()){
     var mpos = getMousePos(); 
     clickStart = createVector(mpos.x, mpos.y);
+    }
 }
 
 function mouseDragged(){
+    if (mode_button.checked()){
     var mpos = getMousePos();
     var pmpos = getMousePos(true);
     if (pmpos.dist(mpos) > 0){
         clickMove.push(getMousePos());
     }
+    }
 }
 
 function mouseReleased(){
+    if (mode_button.checked()){
     clickEnd = getMousePos(); 
     clickList.push({'clickStart': clickStart, 'clickEnd': clickEnd, 'clickMove': clickMove})
         clickStart = null;
+    }
 }
 
 function getMousePos(previous){
