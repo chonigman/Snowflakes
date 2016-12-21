@@ -1,7 +1,3 @@
-/* Better color selection (lightness isssue)
- * Stroke weight selection
- * 
- */
 var palette;
 var bg_color;
 var X_AXIS = 0;
@@ -16,16 +12,9 @@ var clickEnd = null;
 var rot = 0;
 var pos;
 var sides = 6;
-var step = 4;
+var step = 10;
 var angles = [];
-//var thestring = 'HFHFFHF'; // keep because it's good
 var thestring = 'HFHFFHF';
-//thestring = 'FHFHFHF';
-//thestring = 'H++H+F-HFFHF';
-var therules = []; // array for rules
-therules[0] = ['A', 'FF+F-A+F+A--']; // first rule
-therules[0] = ['A', 'FFFA+F+F--FFA+F+A--']; // first rule
-therules[1] = ['B', '+AF+BFB-FA+F--F-F-']; // second rule
 var newrules = [];
 newrules[0] = ['F', 'F-H'];
 newrules[1] = ['H', 'F+H'];
@@ -35,19 +24,20 @@ var tx = 0;
 var ty = 0;
 var nx, ny;
 var npos;
-var save_button;
-var clear_button;
 var mode_button;
-var undo_button;
-var new_rule_button;
+var mode_box;
 var random_color;
 var undo_now = false;
 var generations = 5;
+var mode_switch;
+var mode_slider;
+var mode_checkbox;
 
 
 function setup() {
   strokeWeight(10);
-  createCanvas(720, 720);
+  var canvas = createCanvas(720, 720);
+  canvas.parent('container');
   palette = loadPalette();
   //randomSeed(20);
   color1 = random(palette);
@@ -55,54 +45,36 @@ function setup() {
   color3 = random(palette);
   linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
   center_radius = int(random(0, width*.25));
-  //angleMode(DEGREES);
   angle = 360/sides; 
-  var s = 'FAF+F+FF-F-A-F';
-  for(var i = 0; i < 6; i++){
-    thestring += random(['+', 'F' , 'F', '-', 'F',  'F','F','F', '+', 'F', '-', '-']); 
-  }
-  
-  //therules[0][1] = s;
   for(var i = 0; i < sides; i++){
     angles.push(i*angle);
   }
   rot = 0;
   pos = createVector(width/2, height/2);
-  //****** Step size for more smooth (low) rigid (high) values
   step = 1;
-  //******_Change number of iterations to affect size/form
-  //for (var i = 0; i < generations; i++) {
-  //    thestring = lindenmayer(thestring);
-  //}
   newRule();
-  save_button = createButton('Download');
-  save_button.mousePressed(saveIt);
-  print(thestring);
-  mode_button = createCheckbox('Draw Mode', false);
-  clear_button = createButton('Clear');
-  clear_button.mousePressed(clearLines);
-  undo_button = createButton('Undo');
-  undo_button.mousePressed(undo);
-  new_rule_button = createButton('Generate');
-  new_rule_button.mousePressed(newRule);
-  random_color = createCheckbox('Random Color', false);
-  //frameRate(1);
-  //center = Polygon(width/2, height/2, center_radius, 6);
+  
+  mode_button =  document.getElementById('mode');
+  random_color = document.getElementById('randomColor');
+
 }
 
 function draw() {
-    if(mode_button.checked()){
-      linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
+    if(mode_button.checked && random_color.checked){
+        random_color.checked = false;
+    }
+    if(mode_button.checked){
+        linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
     } else{
         updateIt(thestring[whereinstring]);
     }
     strokeWeight(2.3);
     var color4;
-    if (random_color.checked()){
+    if (random_color.checked){
         color4 = random([color1, color2, color3]);
     //stroke(color3.levels[0], color3.levels[1], color3.levels[2], 80);
     }else{
-        color4 = color3;// random([color1, color2, color3]);
+        color4 = color3;
     }
     noFill();
 
@@ -110,7 +82,7 @@ function draw() {
         push();
         translate(pos.x, pos.y);
         rotate(radians(angles[i]));
-        if(mode_button.checked() == false){
+        if(mode_button.checked == false){
 
             stroke(color4.levels[0], color4.levels[1], color4.levels[2], 100);
             drawIt(thestring[whereinstring]);
@@ -120,21 +92,14 @@ function draw() {
             line(clickStart.x, clickStart.y, mpos.x, mpos.y);
             line(clickStart.x, -clickStart.y, mpos.x, -mpos.y);
         }
-        //line(0, 0, width/2, 0);
         if (keyIsPressed == false){
             for (j = 0; j < clickList.length; j++){
                 var l = clickList[j];
+                if (l != null){
                 stroke(color3);
                 line(l.clickStart.x, l.clickStart.y, l.clickEnd.x, l.clickEnd.y);
                 line(l.clickStart.x, -l.clickStart.y, l.clickEnd.x, -l.clickEnd.y);
-                //vertex(l.clickStart.x, l.clickStart.y);
-                //vertex(-l.clickStart.x, -l.clickStart.y);
-                //          beginShape();
-                //          for(var c = 0; c < l.clickMove.length; c++){
-                //          //      vertex(l.clickMove[c].x, l.clickMove[c].y);
-                //          }
-                //
-                //          endShape();
+                }
             }
         } else{
 
@@ -166,14 +131,14 @@ function draw() {
 }
 
 function mousePressed(){
-    if (mode_button.checked()){
+    if (mode_button.checked && mouseInBounds()){
     var mpos = getMousePos(); 
     clickStart = createVector(mpos.x, mpos.y);
     }
 }
 
 function mouseDragged(){
-    if (mode_button.checked()){
+    if (mode_button.checked){
     var mpos = getMousePos();
     var pmpos = getMousePos(true);
     if (pmpos.dist(mpos) > 0){
@@ -183,11 +148,15 @@ function mouseDragged(){
 }
 
 function mouseReleased(){
-    if (mode_button.checked()){
+    if (mode_button.checked && clickStart != null){
     clickEnd = getMousePos(); 
     clickList.push({'clickStart': clickStart, 'clickEnd': clickEnd, 'clickMove': clickMove})
         clickStart = null;
     }
+}
+
+function mouseInBounds(){
+    return mouseX <= width && mouseX >= 0 && mouseY <= height && mouseY >= 0;
 }
 
 function getMousePos(previous){
@@ -289,7 +258,8 @@ function undo(){
 }
 
 function newRule(){
-    thestring = random(['HFHFFHF', 'FFFHHFHHFFF', 'FHF']);
+    thestring = random(['HFHFFHF', 'FFFHHFHHFFF', 'FHF', 'HFH', 'HHFHF']);
+    print('Starting string ', thestring);
     for(var i = 0; i < 6; i++){
         thestring += random(['+', 'F' , 'F', '-', 'F',  'F','F','F', '+', 'F', '-', '-']); 
     }
