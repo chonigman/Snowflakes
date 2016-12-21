@@ -65,7 +65,10 @@ function setup() {
   }
   rot = 0;
   pos = createVector(width/2, height/2);
-  for (var i = 0; i < 2; i++) {
+  //****** Step size for more smooth (low) rigid (high) values
+  step = 1;
+  //******_Change number of iterations to affect size/form
+  for (var i = 0; i < 5; i++) {
       thestring = lindenmayer(thestring);
   }
   save_button = createButton('Download');
@@ -86,8 +89,9 @@ function draw() {
     } else{
         updateIt(thestring[whereinstring]);
     }
-    strokeWeight(2.2);
-    stroke(color3.levels[0], color3.levels[1], color3.levels[2], 50);
+    strokeWeight(2.3);
+    var color4 = color3;// random([color1, color2, color3]);
+    //stroke(color3.levels[0], color3.levels[1], color3.levels[2], 80);
     noFill();
 
     for(var i = 0; i < angles.length; i++){
@@ -95,11 +99,14 @@ function draw() {
         translate(pos.x, pos.y);
         rotate(radians(angles[i]));
         if(mode_button.checked() == false){
+
+            stroke(color4.levels[0], color4.levels[1], color4.levels[2], 80);
             drawIt(thestring[whereinstring]);
         }
 
         if(clickStart !== null){
             var mpos = getMousePos();
+            stroke(color3);
             line(clickStart.x, clickStart.y, mpos.x, mpos.y);
             line(clickStart.x, -clickStart.y, mpos.x, -mpos.y);
         }
@@ -107,6 +114,7 @@ function draw() {
         if (keyIsPressed == false){
             for (j = 0; j < clickList.length; j++){
                 var l = clickList[j];
+                stroke(color3);
                 line(l.clickStart.x, l.clickStart.y, l.clickEnd.x, l.clickEnd.y);
                 line(l.clickStart.x, -l.clickStart.y, l.clickEnd.x, -l.clickEnd.y);
                 //vertex(l.clickStart.x, l.clickStart.y);
@@ -127,6 +135,7 @@ function draw() {
                 translate(l.clickStart.x, l.clickStart.y);
                 rotate(radians(rot%360));
                 var d = p5.Vector.sub(l.clickStart, l.clickEnd);
+                stroke(color3);
                 line(0, 0, d.x, d.y);
                 line(0, 0, d.x, -d.y);
                 pop();
