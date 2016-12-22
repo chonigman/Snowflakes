@@ -9,7 +9,7 @@
     <script src="libraries/p5.sound.js" type="text/javascript"></script>
 
     <script src="palette.js" type="text/javascript"></script>
-    <script src="sketch.js" type="text/javascript"></script>
+    <script src="sketch_open.js" type="text/javascript"></script>
     <script src="polygon.js" type="text/javascript"></script>
 
 
@@ -17,136 +17,15 @@
 <style> 
 body {
     margin: 0;
-    display: flex;
-    justify-content: center; 
+    /*display: flex;*/
+    /*justify-content: center; */
     width: 100%;
     align-items: center;
 } 
 canvas {vertical-align: top; /*display:block;*/ margin:auto;}
-button { 
-    color: #647678;
-    background-color: transparent;
-    border: 1px solid #647678;
-    transition: all 0.25s ease-out;
-    width: auto;
-    height: auto;
-    display: inline-block;
-    border: 1;
-    font-size: 14px;
-}
-    button:hover {
-        color: #fcfcfc;
-        background-color: #647678;
-        border: 1px solid transparent;
-    }
-
-    ul{
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        /*background-color: #333;*/
-        position: fixed; /* Set the navbar to fixed position */
-        top: 0; /* Position the navbar at the top of the page */
-        width: 100%; /* Full width */
-    }
-    li {
-        float: left;
-    }
-    li button{
-        display: block;
-        text-decoration: none;
-    }
-    #menu {
-        float:left;
-        clear: left;
-    }
-    #defaultCanvas0 {
-        margin-top: 23px;
-    }
-    /* Slider CSS */
-    .switch input {display:none;}
-    .switch {
-        float: left;
-        position: relative;
-        display: inline-block;
-        width: 60px;
-        height: 34px;
-
-    }
-
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #ccc;
-        -webkit-transition: .4s;
-        transition: .4s;
-    }
-
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 26px;
-        width: 26px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        -webkit-transition: .4s;
-        transition: .4s;
-    }
-
-    input:checked + .slider {
-        background-color: #2196F3;
-    }
-
-    input:focus + .slider {
-        box-shadow: 0 0 1px #2196F3;
-    }
-
-    input:checked + .slider:before {
-        -webkit-transform: translateX(26px);
-        -ms-transform: translateX(26px);
-        transform: translateX(26px);
-    }
-    #label{
-        font-family: Roboto;
-        font-size: 18px;
-        padding-top: 5px;
-        padding-left: 15px;
-        float: left;
-    }
-    #switch_container {
-        padding-top: 5px;
-            float: left;
-                display:block;
-                    clear: left;
-    }
 </style>
 
   </head>
   <body id="body">
-      <div id="menu">
-          <ul>
-              <li> <button id="download" onclick="saveIt()">Download</button> </li>
-              <li> <button id="undo" onclick="undo()">Undo</button> </li>
-              <li> <button id="clearLines" onclick="clearLines()">Clear</button> </li>
-              <li> <button id="generate" onclick="newRule()">Generate</button> </li>
-          </ul>
-      </div>
-      <div id="container"></div>
-      <div id="switch_container">
-          <label class="switch">
-              <input type="checkbox" id="mode"></input>
-              <div class="slider"></div> 
-          </label>
-          <div id="label"> <text id="color_label">Draw Mode</text> </div>
-          <br><br>
-          <label class="switch">
-              <input type="checkbox" id="randomColor"></input>
-              <div class="slider"></div>
-          </label>
-          <div id="label"> <text id="color_label">Random Color</text> </div>
-      </div>
   </body>
 </html>
