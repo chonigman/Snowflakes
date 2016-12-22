@@ -1,137 +1,146 @@
+// #WeAreAllSnowflakes 
+// Developed by Kadenze Inc. and Colin Honigman
+// This is an generative and interactive sketch developed for our community
+// to celebrate the close of one year and the beginning of another. We
+// hope you enjoy this small gift from us an we wish you all a safe, happy,
+// and inspiring Holidays and a very Happy New Year. We look forward to 
+// another year learning and creating with you and we can't wait to see what 
+// you come up with.
+
+// Instructions
+// Click Generate to grow a new snowflake
+// Click Save to download your image
+// Select Sparkle Mode for a little *Sparkle*
+// Click Draw to enter draw mode (this erases your generative snowflake)
+
+// Technical Explanation:
+// This piece uses what is called a Lindenmayer System or L-system to generate
+// it's patterns. L-systems are a type of formal grammar that essentially 
+// allows you to use a string of letters as instructions for a random agent. By starting
+// with a simple string and applying simple rules intricate patterns
+// can be generated fairly easily. In this case we used the letters F and H and the
+// symbols + and - as our instructions. Starting with a simple string like HHF we
+// then run the lindenmayer function that iterates over the string and replaces all 
+// F's with F-H and all H's with F+H. Do this a couple of times and you have a long
+// set of drawing instructions. We interpret character as a move forward, for every
+// F we draw a line from the last position to the new one, for every H we draw a 
+// small ellipse, for every + we increment the angle, and for every - we decrement 
+// the angle (both by 60 degrees, snowflakes are generally 6 pointed so 360/6 = 60).
+// The snowflake shape comes from taking the L-system drawing path and rotating and 
+// reflecting it 6 times. The affect is cumulative so we do not redraw the background
+// every frame.
+//
+// To learn more about Fractals, L-Systems, or P5js please check out the following
+// classes on Kadenze.com
+// The Nature of Code  - https://www.kadenze.com/courses/the-nature-of-code-ii/info
+// Generative Art and Computational Creativity  - https://www.kadenze.com/courses/generative-art-and-computational-creativity-i/info
+// Intro to P5js  - https://www.kadenze.com/courses/introduction-to-programming-for-the-visual-arts-with-p5-js-vi/info
+
+
+// Palette and gradient
 var palette;
-var bg_color;
 var X_AXIS = 0;
 var Y_AXIS = 1;
-var center_radius;
-var center;
-var angle; 
+
+// Mouse interaction
 var clickList = [];
-var clickMove = [];
 var clickStart = null;
 var clickEnd = null;
+
+// What might this do?
 var rot = 0;
+
+// Globals
 var pos;
 var sides = 6;
-var step = 10;
+var step = 1;
+var angle; 
 var angles = [];
-var thestring = 'HFHFFHF';
-var newrules = [];
-newrules[0] = ['F', 'F-H'];
-newrules[1] = ['H', 'F+H'];
-var whereinstring = 0;
-var currentangle = 0;
-var tx = 0;
+
+// L-System Variables
+// If you're unfamiliar with L-Systems check out technical description above
+var thestring;              // The string we generate to create our pattern
+var rules = [];             // The rules for generating 'thestring'
+rules[0] = ['F', 'F-H'];    // For every F, replace with F-H
+rules[1] = ['H', 'F+H'];    // For every H, replace with F+h
+var whereinstring = 0;      // Keep track of where we are in string for drawing
+var currentangle = 0;       // Keep track of angle for l-system
+var tx = 0;                 // X and Y position of l-system
 var ty = 0;
-var nx, ny;
-var npos;
-var mode_box;
+var generations = 5;        // How many times to run string through rule set
+
+// UI Logic and Buttons and Stuff
 var draw_mode = false;
 var draw_button;
 var gen_button;
-var random_color;
-var undo_now = false;
-var generations = 5;
 var mode_switch;
 var mode_slider;
 var mode_checkbox;
 var save_button;
 var div;
 var sparkle;
+var new_session = true;
+var menu_offset = 41;
 
 
 function setup() {
-  createCanvas(530, 560);
-  palette = loadPalette();
-  color1 = random(palette);
-  color2 = random(palette);
-  color3 = random(palette);
-  linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
-  center_radius = int(random(0, width*.25));
-  angle = 360/sides; 
-  for(var i = 0; i < sides; i++){
-    angles.push(i*angle);
-  }
-  rot = 0;
-  pos = createVector(width/2, height/2);
-  step = 1;
-  newRule();
-  draw_button = createButton('DRAW');
-  draw_button.mousePressed(setDrawMode);
-  gen_button = createButton('GENERATE');
-  gen_button.mousePressed(setGenMode);
-  random_color = {'checked': false};
-  save_button = createButton('SAVE');
-  save_button.mousePressed(saveIt);
-  sparkle = createCheckbox('Sparkle Mode');
-  div = createDiv('');
-  gen_button.class('btn');
-  draw_button.class('btn');
-  save_button.class('btn');
-  var btns = [save_button, draw_button, gen_button];
-
-  for(var i = 0; i < btns.length; i++){
-      btns[i].style('color: white');
-      btns[i].style('background: transparent');
-      btns[i].style('border: 1px solid white');
-      btns[i].style('padding: 5px 30px');
-      btns[i].style('font-size: 14px');
-      btns[i].style('width: auto');
-      btns[i].style('height: auto');
-      btns[i].style('margin: 10px 0 0 10px');
-      btns[i].style('font-family: Roboto');
-      
-  }
-
-  gen_button.parent(div);
-  draw_button.parent(div);
-  save_button.parent(div);
-  sparkle.parent(div);
-  sparkle.style('color: white');
-  sparkle.style('display: inline-block');
-  sparkle.style('margin-left: 20px');
-  sparkle.style('font-family: Roboto');
-  sparkle.style('font-size: 12px');
-  div.position(0, height-38);
-  div.style('background: black');
-  div.style('width:530px');
-  
+  	seasonsGreetings();
+    createCanvas(530, 560);
+    palette = loadPalette();        // Load our palette
+    color1 = random(palette);       // Select random colors for gradient and stroke
+    color2 = random(palette);
+    color3 = random(palette);
+    linearGradient(0, 0, width, height, color1, color2, Y_AXIS); // Draw our background gradient
+    angle = 360/sides;              // Calculate angle size for number of sides we want
+    for(var i = 0; i < sides; i++){
+        angles.push(i*angle);       // Precalculate angles for rotation 
+    }
+    pos = createVector(width/2, height/2);
+    generate();                     // Generate new rule and string
+    setupUI();                      // Set up the UI elements and styling
 }
 
 
 function draw() {
+    noFill();
+    strokeWeight(2.3);
+    // Sparkle Mode only in Generative mode, draw mode disables sparkle mode
     if(draw_mode && sparkle.checked()){
         sparkle.checked(false);
     }
+    // If we are in draw mode redraw background, otherwise update position in l-system
     if(draw_mode){
         linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
     } else{
         updateIt(thestring[whereinstring]);
     }
-    strokeWeight(2.3);
+    // Sparkle Mode randomly selects one of three previously selected colors and 
+    // changes with every frame. Otherwise, use color3 as stroke color
     var color4;
     if (sparkle.checked()){
         color4 = random([color1, color2, color3]);
-        //stroke(color3.levels[0], color3.levels[1], color3.levels[2], 80);
-    }else{
+    } else{
         color4 = color3;
     }
-    noFill();
-
+    // Here is where we draw, rotate, and reflect our points for both modes
     for(var i = 0; i < angles.length; i++){
         push();
         translate(pos.x, pos.y);
         rotate(radians(angles[i]));
-        if(draw_mode == false){
-
+        // If we are not in draw mode and the generate button has been pushed
+        if(draw_mode == false && new_session == false){
+            // A little opacity makes for nice looking snowflakes
             stroke(color4.levels[0], color4.levels[1], color4.levels[2], 100);
             drawIt(thestring[whereinstring]);
         } else if(clickStart !== null){
+            // If we are in draw mode and a click has been started, draw position so we can see how it looks
             var mpos = getMousePos();
-            stroke(color3);
+            stroke(color4);
             line(clickStart.x, clickStart.y, mpos.x, mpos.y);
-            line(clickStart.x, -clickStart.y, mpos.x, -mpos.y);
+            line(clickStart.x, -clickStart.y, mpos.x, -mpos.y); // reflection over x axis
         }
-        if (keyIsPressed == false){
+        // If in Draw Mode draw the lines if you press a button spin everything!
+        if (draw_mode && keyIsPressed == false){
             for (j = 0; j < clickList.length; j++){
                 var l = clickList[j];
                 if (l != null){
@@ -140,35 +149,19 @@ function draw() {
                     line(l.clickStart.x, -l.clickStart.y, l.clickEnd.x, -l.clickEnd.y);
                 }
             }
-        } else{
-
-            rot += 1;
+            rot = 0;
+        } else {
             for (j = 0; j < clickList.length; j++){
-                var l = clickList[j];
-                push();
-                translate(l.clickStart.x, l.clickStart.y);
-                rotate(radians(rot%360));
-                var d = p5.Vector.sub(l.clickStart, l.clickEnd);
-                stroke(color3);
-                line(0, 0, d.x, d.y);
-                line(0, 0, d.x, -d.y);
-                pop();
+                // Spin everything around the center
+                spinIt(j, color4);
             }
         }
         pop();
     }
-
-    whereinstring++;
-    if(whereinstring > thestring.length-1) whereinstring = 0;
-    if (undo_now){
-        undo_now = false;
-        //clickList = clickList.splice(clickList.length-1, 1);
-        clickList.pop();
-        print(clickList.length);
-    }
-    //endShape();
+    if(keyIsPressed) rot += 1; // Update rotation for key pressing
 }
 
+// Store mouse presses and update clickStart
 function mousePressed(){
     if (draw_mode && mouseInBounds()){
         var mpos = getMousePos(); 
@@ -176,38 +169,27 @@ function mousePressed(){
     }
 }
 
-function mouseDragged(){
-    if (draw_mode){
-        var mpos = getMousePos();
-        var pmpos = getMousePos(true);
-        if (pmpos.dist(mpos) > 0){
-            clickMove.push(getMousePos());
-        }
-    }
-}
-
+// Store mouse release, push start and end to list and clear clickStart
 function mouseReleased(){
     if (draw_mode && clickStart != null){
         clickEnd = getMousePos(); 
-        clickList.push({'clickStart': clickStart, 'clickEnd': clickEnd, 'clickMove': clickMove})
+        clickList.push({'clickStart': clickStart, 'clickEnd': clickEnd})
             clickStart = null;
     }
 }
 
+// Ignore menu item clicks
 function mouseInBounds(){
-    return mouseX <= width && mouseX >= 0 && mouseY <= (height-30) && mouseY >= 0;
+    return mouseX <= width && mouseX >= 0 && mouseY <= (height-menu_offset) && mouseY >= 0;
 }
 
-function getMousePos(previous){
-    if(previous == null){
-        var mpos = p5.Vector.sub(createVector(mouseX, mouseY), pos);
-    }else if (previous == true) {
-        var mpos = p5.Vector.sub(createVector(pmouseX, pmouseY), pos);
-    }
+// Convert mouse position to translated origin
+function getMousePos(){
+    var mpos = p5.Vector.sub(createVector(mouseX, mouseY), pos);
     return mpos;
 }
 
-
+// Linear Gradient Function from http://p5js.org/examples/color-linear-gradient.html 
 function linearGradient(x, y, w, h, c1, c2, axis){
     noFill();
     if (axis == Y_AXIS){
@@ -225,52 +207,55 @@ function linearGradient(x, y, w, h, c1, c2, axis){
             line(i, y, i, y + h);
         }
     }
-
 }
 
-// interpret an L-system
+// L-System Functions. Takes in string, checks rules, and updates string
+// Code from http://p5js.org/examples/simulate-l-systems.html 
 function lindenmayer(s) {
-    var outputstring = ''; // start a blank output string
+    var outputstring = '';      // New output string
 
-    // iterate through 'therules' looking for symbol matches:
+    // Iterate over string to find matches 
     for (var i = 0; i < s.length; i++) {
-        var ismatch = 0; // by default, no match
-        for (var j = 0; j < newrules.length; j++) {
-            if (s[i] == newrules[j][0])  {
-                outputstring += newrules[j][1]; // write substitution
-                ismatch = 1; // we have a match, so don't copy over symbol
-                break; // get outta this for() loop
+        var ismatch = 0; 
+        for (var j = 0; j < rules.length; j++) {
+            // If matches rule substitute symbol with rule output
+            if (s[i] == rules[j][0])  {
+                outputstring += rules[j][1]; 
+                ismatch = 1; 
+                break;
             }
         }
-        // if nothing matches, just copy the symbol over.
+        // If nothing matches, just copy the symbol over.
         if (ismatch == 0) outputstring+= s[i]; 
     }
 
-    return outputstring; // send out the modified string
+    return outputstring; 
 }
 
 
-// this is a custom function that draws turtle commands
+// Drawing portion of L-System 
 function drawIt(k) {
-
-    if (k=='F') { // draw forward
-
-        // polar to cartesian based on step and currentangle:
+    if (k=='F') {
+        // Convert polar to cartesian coordinated 
+        // based on step value and currentangle
         var x1 = tx+step*cos(radians(currentangle));
         var y1 = ty+step*sin(radians(currentangle));
-        line(tx, ty, x1, y1); // connect the old and the new
-        line(tx, -ty, x1, -y1);
-        // update the turtle's position:
-        //tx = x1;
-        //ty = y1;
-    }else if(k=='H'){
+        line(tx, ty, x1, y1);   // Draw line from previous position and new one 
+        line(tx, -ty, x1, -y1); // Reflect line across x axis
+    } else if(k=='H'){
         var x1 = tx+step*cos(radians(currentangle));
         var y1 = ty+step*sin(radians(currentangle));
         ellipse(x1, y1, 2, 2);
     }
 }
 
+
+// Update L-System. Position in string, current location, and angle if character matches
+// Separated from draw as we are drawing each point multiple times so updating angle etc
+// breaks it
 function updateIt(k) {
+    whereinstring++;
+    if(whereinstring > thestring.length-1) whereinstring = 0; // Update
     tx = tx + step * cos(radians(currentangle));
     ty = ty + step * sin(radians(currentangle));
     if (k == '+') {
@@ -278,10 +263,10 @@ function updateIt(k) {
     } else if (k == '-') {
         currentangle -= angle; // turn right   
     }
-
 }
 
-function clearLines(){
+// Reset our l-system and our drawing list
+function reset(){
     currentangle = 0;
     whereinstring = 0;
     tx = 0;
@@ -289,47 +274,134 @@ function clearLines(){
     linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
     clickList = [];
 }
+
+// Save your awesome image. Don't forget to tag us #WeAreAllSnowflakes
 function saveIt(){
-  	//var ctx = hidden_canvas.getContext('2d');
-    //
     saveCanvas('KadenzeSnowflake', 'jpg');
 }
-function undo(){
-    undo_now = true;
-}
 
+// Setter method for draw button. If already in draw mode it resets screen.
 function setDrawMode(){
+    if (draw_mode){
+        reset();
+    }
     draw_mode = true;
 }
 
+// Setter method for generate mode. If new session don't create new colors
 function setGenMode(){
     draw_mode = false;
-    color1 = random(palette); 
-    color2 = random(palette); 
-    color3 = random(palette); 
-    clearLines();
-    newRule();
-  linearGradient(0, 0, width, height, color1, color2, Y_AXIS);
+    reset();
+    if(new_session == false) {
+        generate();
+        color1 = random(palette); 
+        color2 = random(palette); 
+        color3 = random(palette); 
+        linearGradient(0, 0, width, height, color1, color2, Y_AXIS)
+    }
+    new_session = false;
 }
 
-
-function newRule(){
+// Generate method. Randomly selects starting string. Runs it through
+// lindenmayer function and resets.
+function generate(){
+  	reset();  
+  	print('\n');
+    print('The following string is being rendered.\n');
     thestring = random(['HFHFFHF', 'FFFHHFHHFFF', 'FHF', 'HFH', 'HHFHF']);
-    print('Starting string ', thestring);
     for(var i = 0; i < 6; i++){
-        thestring += random(['+', 'F' , 'F', '-', 'F',  'F','F','F', '+', 'F', '-', '-']); 
+        thestring += random(['+', 'F' , '+', '-', 'F',  'F','F','F', '+', 'F', '-', '-']); 
     }
+    print('Starting string: ');
+  	print(thestring);
+  	print(" \n");
     for (var i = 0; i < generations; i++) {
         thestring = lindenmayer(thestring);
     }
-    print(thestring);
-    currentangle = 0;
-    whereinstring = 0;
-    tx = 0;
-    ty = 0;
-
+    print('Resulting string: ');
+  	print(thestring);
+  	print(' \n');
 }
 
+
+// Just for fun !(^_^)!
+function spinIt(j, c){
+    //rotate(radians(rot%360));
+    var l = clickList[j];
+    stroke(c);
+    push();
+    // spin each line around their starting point
+    translate(l.clickStart.x, l.clickStart.y);
+    var sub;
+    if (pos.dist(l.clickStart) > pos.dist(l.clickEnd)){
+        sub = p5.Vector.sub(l.clickStart, l.clickEnd);
+    } else {
+        sub = p5.Vector.sub(l.clickEnd, l.clickStart);
+    }
+    // Calculate the angle from the line so we start where it was drawn 
+    // Couldn't totally figure this out so they start from drawn position
+    var a = atan2(sub.y, sub.x);
+    rotate(radians(rot%360)-a);
+    var d = p5.Vector.sub(l.clickStart, l.clickEnd);
+    line(0, 0, d.x, d.y);
+    pop();
+    push();
+    // Spin reflection line as well
+    translate(l.clickStart.x, -l.clickStart.y);
+    rotate(radians(rot%360)-a);
+    line(0, 0, d.x, d.y);
+    pop();
+}
+
+// Open Processing limits screen display to canvas size, so we
+// create HTML elements over bottom and style them to look like menu
+function setupUI(){
+    draw_button = createButton('DRAW');
+    draw_button.mousePressed(setDrawMode);
+    gen_button = createButton('GENERATE');
+    gen_button.mousePressed(setGenMode);
+    save_button = createButton('SAVE');
+    save_button.mousePressed(saveIt);
+    sparkle = createCheckbox('Sparkle Mode');
+    div = createDiv('');
+    gen_button.class('btn');
+    draw_button.class('btn');
+    save_button.class('btn');
+    var btns = [save_button, draw_button, gen_button];
+
+    for(var i = 0; i < btns.length; i++){
+        btns[i].style('color: white');
+        btns[i].style('background: transparent');
+        btns[i].style('border: 1px solid white');
+        btns[i].style('padding: 5px 30px');
+        btns[i].style('font-size: 14px');
+        btns[i].style('width: auto');
+        btns[i].style('height: auto');
+        btns[i].style('margin: 10px 0 0 10px');
+        btns[i].style('font-family: Roboto');
+
+    }
+    gen_button.parent(div);
+    draw_button.parent(div);
+    save_button.parent(div);
+    sparkle.parent(div);
+    sparkle.style('color: white');
+    sparkle.style('display: inline-block');
+    sparkle.style('margin-left: 20px');
+    sparkle.style('font-family: Roboto');
+    sparkle.style('font-size: 12px');
+    div.position(0, height-menu_offset);
+    div.style('background: black');
+    div.style('width:530px');
+  	div.style('height:' +menu_offset + 'px');
+}
+
+// Perhaps my favorite part is this color palette.
+// Snowflakes are amazing from a aesthetic and a scientific perspective.
+// This palette was collected from the AMAZING photos taken by Kenneth G. Libbrecht 
+// who is a professor of physics at CalTech. He even grows his own snowflakes. 
+// Great resource and tremendous inspiration for this project. 
+// Check out his site at http://snowcrystals.com/
 function loadPalette() {
     var p = [
         color(25, 47, 158),
@@ -368,7 +440,16 @@ function loadPalette() {
         color(190, 204, 248),
         color(114, 170, 229),
         color(226, 212, 244),
-        color(33, 48, 76),
-        ]
+        color(33, 48, 76)
+            ]
             return p;
+}
+
+// Something extra for those who might open up the console.
+function seasonsGreetings(){
+    print("Happy Holidays from Kadenze Inc.\n");
+    print("#WeAreAllSnowflakes is a generative and interactive piece developed by Kadenze's Colin Honigman for our community.\n");
+    print("Click Generate to watch a snowflake grow.\n");
+    print("Click Save to download your snowflake and share your #WeAreAllSnowflakes image. Don't forget to tag us! ;)\n");
+    print("Click Draw to draw your own snowflake.");
 }
