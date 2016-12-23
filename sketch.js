@@ -68,6 +68,10 @@ var currentangle = 0;       // Keep track of angle for l-system
 var tx = 0;                 // X and Y position of l-system
 var ty = 0;
 var generations = 5;        // How many times to run string through rule set
+var max_x = 0;
+var min_x = 0;
+var max_y = 0;
+var min_y = 0;
 
 // UI Logic and Buttons and Stuff
 var draw_mode = false;
@@ -134,7 +138,7 @@ function draw() {
         // If we are not in draw mode and the generate button has been pushed
         if(draw_mode == false && new_session == false){
             // A little opacity makes for nice looking snowflakes
-            stroke(color4.levels[0], color4.levels[1], color4.levels[2], 100);
+            stroke(color4.levels[0], color4.levels[1], color4.levels[2], 100*step);
             drawIt(thestring[whereinstring]);
         } else if(clickStart !== null){
             // If we are in draw mode and a click has been started, draw position so we can see how it looks
@@ -336,6 +340,7 @@ function generate(){
     print('Resulting string: ');
     print(thestring);
     print(' \n');
+    getMaxFromSystem();
 }
 
 
@@ -502,6 +507,33 @@ function detectmob() {
     else {
         return false;
     }
+}
+
+function getMaxFromSystem(){
+    max_x = 0;
+    max_y = 0;
+    min_x = 0;
+    min_y = 0;
+    for (var i = 0; i < thestring.length*4; i++){
+       updateIt(thestring[whereinstring]); 
+       if(tx > max_x) {
+           max_x = tx;
+        } else if (tx < min_x) { 
+            min_x = tx;
+        }
+       if (ty > max_y) {
+           max_y = ty;
+        } else if (ty < min_y){
+            min_y = ty;
+        }
+    }
+    if (max_x > width/2 || max_y > height/2){
+        step = map((width/2)/max([max_x, max_y]), 0, 1, 0, .9);
+    } else if (min_x < -width/2 || min_y < -height/2){
+        step = map(-((width/2)/min([min_x, min_y])), 0, 1, 0, .9);
+    }else { step = 1;}
+    print(step);
+    reset();
 }
 
 var saveAs=saveAs||function(e){"use strict";if(typeof e==="undefined"||typeof navigator!=="undefined"&&/MSIE [1-9]\./.test(navigator.userAgent)){return}var t=e.document,n=function(){return e.URL||e.webkitURL||e},r=t.createElementNS("http://www.w3.org/1999/xhtml","a"),o="download"in r,a=function(e){var t=new MouseEvent("click");e.dispatchEvent(t)},i=/constructor/i.test(e.HTMLElement)||e.safari,f=/CriOS\/[\d]+/.test(navigator.userAgent),u=function(t){(e.setImmediate||e.setTimeout)(function(){throw t},0)},s="application/octet-stream",d=1e3*40,c=function(e){var t=function(){if(typeof e==="string"){n().revokeObjectURL(e)}else{e.remove()}};setTimeout(t,d)},l=function(e,t,n){t=[].concat(t);var r=t.length;while(r--){var o=e["on"+t[r]];if(typeof o==="function"){try{o.call(e,n||e)}catch(a){u(a)}}}},p=function(e){if(/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(e.type)){return new Blob([String.fromCharCode(65279),e],{type:e.type})}return e},v=function(t,u,d){if(!d){t=p(t)}var v=this,w=t.type,m=w===s,y,h=function(){l(v,"writestart progress write writeend".split(" "))},S=function(){if((f||m&&i)&&e.FileReader){var r=new FileReader;r.onloadend=function(){var t=f?r.result:r.result.replace(/^data:[^;]*;/,"data:attachment/file;");var n=e.open(t,"_blank");if(!n)e.location.href=t;t=undefined;v.readyState=v.DONE;h()};r.readAsDataURL(t);v.readyState=v.INIT;return}if(!y){y=n().createObjectURL(t)}if(m){e.location.href=y}else{var o=e.open(y,"_blank");if(!o){e.location.href=y}}v.readyState=v.DONE;h();c(y)};v.readyState=v.INIT;if(o){y=n().createObjectURL(t);setTimeout(function(){r.href=y;r.download=u;a(r);h();c(y);v.readyState=v.DONE});return}S()},w=v.prototype,m=function(e,t,n){return new v(e,t||e.name||"download",n)};if(typeof navigator!=="undefined"&&navigator.msSaveOrOpenBlob){return function(e,t,n){t=t||e.name||"download";if(!n){e=p(e)}return navigator.msSaveOrOpenBlob(e,t)}}w.abort=function(){};w.readyState=w.INIT=0;w.WRITING=1;w.DONE=2;w.error=w.onwritestart=w.onprogress=w.onwrite=w.onabort=w.onerror=w.onwriteend=null;return m}(typeof self!=="undefined"&&self||typeof window!=="undefined"&&window||this.content);if(typeof module!=="undefined"&&module.exports){module.exports.saveAs=saveAs}else if(typeof define!=="undefined"&&define!==null&&define.amd!==null){define("FileSaver.js",function(){return saveAs})}
