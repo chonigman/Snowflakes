@@ -3,9 +3,8 @@
 // www.kadenze.com
 // This is an generative and interactive sketch developed for our community
 // to celebrate the close of one year and the beginning of another. We
-// hope you enjoy this small gift from us an we wish you all a safe, happy,
-// and inspiring Holidays and a very Happy New Year. We look forward to 
-// another year learning and creating with you and we can't wait to see what 
+// hope you enjoy this small gift from us an we wish you all safe, happy, and inspiring holidays. 
+//We look forward to another year learning and creating with you and we can't wait to see what 
 // you come up with.
 
 // Instructions
@@ -86,7 +85,11 @@ var menu_offset = 41;
 
 function setup() {
   	seasonsGreetings();
-    createCanvas(720, 750);
+  	if (detectmob()){
+    	createCanvas(windowWidth, windowHeight);
+    } else{
+   	 createCanvas(680, 710);
+    }
     palette = loadPalette();        // Load our palette
     color1 = random(palette);       // Select random colors for gradient and stroke
     color2 = random(palette);
@@ -160,6 +163,7 @@ function draw() {
         pop();
     }
     if(keyIsPressed) rot += 1; // Update rotation for key pressing
+
 }
 
 // Store mouse presses and update clickStart
@@ -278,7 +282,15 @@ function reset(){
 
 // Save your awesome image. Don't forget to tag us #WeAreAllSnowflakes
 function saveIt(){
-    saveCanvas('KadenzeSnowflake', 'jpg');
+	var canvas = document.getElementById('defaultCanvas0');
+  	if (detectmob()){
+    	var dataURL = canvas.toDataURL();
+
+    } else{
+        canvas.toBlob(function(blob) {
+            saveAs(blob, "KadenzeSnowflake.jpg");
+        });
+    }
 }
 
 // Setter method for draw button. If already in draw mode it resets screen.
@@ -287,7 +299,7 @@ function setDrawMode(){
         reset();
     }
     draw_mode = true;
-    sparkle.style('visibility: hidden');
+    sparkle.style('opacity: .5');
 }
 
 // Setter method for generate mode. If new session don't create new colors
@@ -302,28 +314,28 @@ function setGenMode(){
         linearGradient(0, 0, width, height, color1, color2, Y_AXIS)
     }
     new_session = false;
-    sparkle.style('visibility: visible');
+    sparkle.style('opacity: 1');
 }
 
 // Generate method. Randomly selects starting string. Runs it through
 // lindenmayer function and resets.
 function generate(){
-  	reset();  
-  	print('\n');
+    reset();  
+    print('\n');
     print('The following string is being rendered.\n');
     thestring = random(['HFHFFHF', 'FFFHHFHHFFF', 'FHF', 'HFH', 'HHFHF']);
     for(var i = 0; i < 6; i++){
         thestring += random(['F' ,'F',  'F','F','F', 'F', 'H', 'H']); 
     }
     print('Starting string: ');
-  	print(thestring);
-  	print(" \n");
+    print(thestring);
+    print(" \n");
     for (var i = 0; i < generations; i++) {
         thestring = lindenmayer(thestring);
     }
     print('Resulting string: ');
-  	print(thestring);
-  	print(' \n');
+    print(thestring);
+    print(' \n');
 }
 
 
@@ -360,12 +372,19 @@ function spinIt(j, c){
 // create HTML elements over bottom and style them to look like menu
 function setupUI(){
     draw_button = createButton('DRAW');
-    draw_button.mousePressed(setDrawMode);
     gen_button = createButton('GENERATE');
-    gen_button.mousePressed(setGenMode);
     save_button = createButton('SAVE');
-    save_button.mousePressed(saveIt);
     sparkle = createCheckbox('Sparkle Mode');
+    if (detectmob()){
+        draw_button.touchStarted(setDrawMode);
+        gen_button.touchStarted(setGenMode);
+        save_button.touchStarted(saveIt);
+    } else {
+        draw_button.mousePressed(setDrawMode);
+        gen_button.mousePressed(setGenMode);
+        save_button.mousePressed(saveIt);
+
+    }
     div = createDiv('');
     gen_button.class('btn');
     draw_button.class('btn');
@@ -376,17 +395,28 @@ function setupUI(){
         btns[i].style('color: white');
         btns[i].style('background: transparent');
         btns[i].style('border: 1px solid white');
-        btns[i].style('padding: 5px 30px');
-        btns[i].style('font-size: 14px');
+        if (detectmob()){
+            btns[i].style('padding: 5px 15px');
+            btns[i].style('font-size: 12px');
+            btns[i].style('margin: 10px 0 0 10px');
+        } else {
+            btns[i].style('padding: 5px 30px');
+            btns[i].style('font-size: 14px');
+            btns[i].style('margin: 10px 0 0 10px');
+        }
+        btns[i].style('font-family: Roboto');
         btns[i].style('width: auto');
         btns[i].style('height: auto');
-        btns[i].style('margin: 10px 0 0 10px');
-        btns[i].style('font-family: Roboto');
 
     }
     gen_button.parent(div);
     draw_button.parent(div);
-    save_button.parent(div);
+
+    if (detectmob()){
+        save_button.style('visibility: hidden');
+    } else {
+        save_button.parent(div);
+    }
     sparkle.parent(div);
     sparkle.style('color: white');
     sparkle.style('display: inline-block');
@@ -396,7 +426,8 @@ function setupUI(){
     div.position(0, height-menu_offset);
     div.style('background: black');
     div.style('width:' + width + 'px');
-  	div.style('height:' +menu_offset + 'px');
+    div.style('height:' + menu_offset + 'px');
+
 }
 
 // Perhaps my favorite part is this color palette.
@@ -456,3 +487,21 @@ function seasonsGreetings(){
     print("Click Save to download your snowflake and share your #WeAreAllSnowflakes image. Don't forget to tag us! ;)\n");
     print("Click Draw to draw your own snowflake.");
 }
+
+function detectmob() { 
+    if( navigator.userAgent.match(/Android/i)
+            || navigator.userAgent.match(/webOS/i)
+            || navigator.userAgent.match(/iPhone/i)
+            || navigator.userAgent.match(/iPad/i)
+            || navigator.userAgent.match(/iPod/i)
+            || navigator.userAgent.match(/BlackBerry/i)
+            || navigator.userAgent.match(/Windows Phone/i)
+      ){
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+var saveAs=saveAs||function(e){"use strict";if(typeof e==="undefined"||typeof navigator!=="undefined"&&/MSIE [1-9]\./.test(navigator.userAgent)){return}var t=e.document,n=function(){return e.URL||e.webkitURL||e},r=t.createElementNS("http://www.w3.org/1999/xhtml","a"),o="download"in r,a=function(e){var t=new MouseEvent("click");e.dispatchEvent(t)},i=/constructor/i.test(e.HTMLElement)||e.safari,f=/CriOS\/[\d]+/.test(navigator.userAgent),u=function(t){(e.setImmediate||e.setTimeout)(function(){throw t},0)},s="application/octet-stream",d=1e3*40,c=function(e){var t=function(){if(typeof e==="string"){n().revokeObjectURL(e)}else{e.remove()}};setTimeout(t,d)},l=function(e,t,n){t=[].concat(t);var r=t.length;while(r--){var o=e["on"+t[r]];if(typeof o==="function"){try{o.call(e,n||e)}catch(a){u(a)}}}},p=function(e){if(/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(e.type)){return new Blob([String.fromCharCode(65279),e],{type:e.type})}return e},v=function(t,u,d){if(!d){t=p(t)}var v=this,w=t.type,m=w===s,y,h=function(){l(v,"writestart progress write writeend".split(" "))},S=function(){if((f||m&&i)&&e.FileReader){var r=new FileReader;r.onloadend=function(){var t=f?r.result:r.result.replace(/^data:[^;]*;/,"data:attachment/file;");var n=e.open(t,"_blank");if(!n)e.location.href=t;t=undefined;v.readyState=v.DONE;h()};r.readAsDataURL(t);v.readyState=v.INIT;return}if(!y){y=n().createObjectURL(t)}if(m){e.location.href=y}else{var o=e.open(y,"_blank");if(!o){e.location.href=y}}v.readyState=v.DONE;h();c(y)};v.readyState=v.INIT;if(o){y=n().createObjectURL(t);setTimeout(function(){r.href=y;r.download=u;a(r);h();c(y);v.readyState=v.DONE});return}S()},w=v.prototype,m=function(e,t,n){return new v(e,t||e.name||"download",n)};if(typeof navigator!=="undefined"&&navigator.msSaveOrOpenBlob){return function(e,t,n){t=t||e.name||"download";if(!n){e=p(e)}return navigator.msSaveOrOpenBlob(e,t)}}w.abort=function(){};w.readyState=w.INIT=0;w.WRITING=1;w.DONE=2;w.error=w.onwritestart=w.onprogress=w.onwrite=w.onabort=w.onerror=w.onwriteend=null;return m}(typeof self!=="undefined"&&self||typeof window!=="undefined"&&window||this.content);if(typeof module!=="undefined"&&module.exports){module.exports.saveAs=saveAs}else if(typeof define!=="undefined"&&define!==null&&define.amd!==null){define("FileSaver.js",function(){return saveAs})}
