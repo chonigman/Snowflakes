@@ -1,5 +1,6 @@
 // #WeAreAllSnowflakes 
 // Developed by Kadenze Inc. and Colin Honigman
+// www.kadenze.com
 // This is an generative and interactive sketch developed for our community
 // to celebrate the close of one year and the beginning of another. We
 // hope you enjoy this small gift from us an we wish you all a safe, happy,
@@ -85,7 +86,7 @@ var menu_offset = 41;
 
 function setup() {
   	seasonsGreetings();
-    createCanvas(530, 560);
+    createCanvas(720, 750);
     palette = loadPalette();        // Load our palette
     color1 = random(palette);       // Select random colors for gradient and stroke
     color2 = random(palette);
@@ -95,7 +96,7 @@ function setup() {
     for(var i = 0; i < sides; i++){
         angles.push(i*angle);       // Precalculate angles for rotation 
     }
-    pos = createVector(width/2, height/2);
+    pos = createVector(width/2, height/2);//(height/2)-menu_offset/2);
     generate();                     // Generate new rule and string
     setupUI();                      // Set up the UI elements and styling
 }
@@ -286,6 +287,7 @@ function setDrawMode(){
         reset();
     }
     draw_mode = true;
+    sparkle.style('visibility: hidden');
 }
 
 // Setter method for generate mode. If new session don't create new colors
@@ -300,6 +302,7 @@ function setGenMode(){
         linearGradient(0, 0, width, height, color1, color2, Y_AXIS)
     }
     new_session = false;
+    sparkle.style('visibility: visible');
 }
 
 // Generate method. Randomly selects starting string. Runs it through
@@ -310,7 +313,7 @@ function generate(){
     print('The following string is being rendered.\n');
     thestring = random(['HFHFFHF', 'FFFHHFHHFFF', 'FHF', 'HFH', 'HHFHF']);
     for(var i = 0; i < 6; i++){
-        thestring += random(['+', 'F' , '+', '-', 'F',  'F','F','F', '+', 'F', '-', '-']); 
+        thestring += random(['F' ,'F',  'F','F','F', 'F', 'H', 'H']); 
     }
     print('Starting string: ');
   	print(thestring);
@@ -392,7 +395,7 @@ function setupUI(){
     sparkle.style('font-size: 12px');
     div.position(0, height-menu_offset);
     div.style('background: black');
-    div.style('width:530px');
+    div.style('width:' + width + 'px');
   	div.style('height:' +menu_offset + 'px');
 }
 
