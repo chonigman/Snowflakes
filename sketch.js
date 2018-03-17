@@ -52,7 +52,7 @@ var rot = 0;
 
 // Globals
 var pos;
-var sides = 6;
+var sides = 6; 
 var step = 1;
 var angle; 
 var angles = [];
@@ -92,7 +92,7 @@ function setup() {
   	if (detectmob()){
     	createCanvas(windowWidth, windowHeight);
     } else{
-   	 createCanvas(680, 710);
+   	 createCanvas(800, 1120);
     }
     palette = loadPalette();        // Load our palette
     color1 = random(palette);       // Select random colors for gradient and stroke
@@ -106,6 +106,7 @@ function setup() {
     pos = createVector(width/2, height/2);//(height/2)-menu_offset/2);
     generate();                     // Generate new rule and string
     setupUI();                      // Set up the UI elements and styling
+    setGenMode();
 }
 
 
@@ -328,8 +329,11 @@ function generate(){
     print('\n');
     print('The following string is being rendered.\n');
     thestring = random(['HFHFFHF', 'FFFHHFHHFFF', 'FHF', 'HFH', 'HHFHF']);
-    for(var i = 0; i < 6; i++){
+    //thestring = random(['H', 'F', 'HH', 'FF', 'FHF', 'HFH']);
+    //generations = 8;
+    for(var i = 0; i < 5; i++){
         thestring += random(['F' ,'F',  'F','F','F', 'F', 'H', 'H']); 
+        //thestring += random(['F', 'F', 'F', 'F', 'F', 'F', 'H', 'H', 'H', 'H']);
     }
     print('Starting string: ');
     print(thestring);
